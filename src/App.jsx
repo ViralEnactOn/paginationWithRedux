@@ -1,35 +1,109 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
+import { useAddNewPostMutation } from "./services/apiSlice";
+import ReactPaginate from "react-paginate";
+import { ThreeCircles } from "react-loader-spinner";
 function App() {
-  const [count, setCount] = useState(0)
+  const [addNewPost, response] = useAddNewPostMutation();
+  const [allData, setAllData] = useState([]);
+  const itemsPerPage = 2;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [count, setCount] = useState("");
+  const pageCount = Math.ceil(count / itemsPerPage);
+  const [loader, setLoader] = useState(true);
+
+  const fetchData = (pageNo) => {
+    setLoader(true);
+    let formData = {
+      perPage: itemsPerPage,
+      page: pageNo,
+    };
+    addNewPost(formData)
+      .unwrap()
+      .then((res) => {
+        console.log("Response", res.data.total);
+        setCount(res.data.total);
+        setAllData(res.data.deals);
+        setLoader(false);
+      })
+      .then((error) => {
+        console.log(error);
+      });
+  };
+
+  useEffect(() => {
+    fetchData(1);
+  }, []);
+
+  // Pagination logic
+  const handlePageClick = ({ selected }) => {
+    console.log("selected", selected);
+    setCurrentPage(selected);
+    fetchData(selected);
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <main className="flex justify-center min-w-max ">
+        <div className="container">
+          {loader && (
+            <>
+              <div className="flex justify-center h-screen items-center">
+                <ThreeCircles
+                  height="100"
+                  width="100"
+                  color="#4d94a9"
+                  wrapperStyle={{}}
+                  wrapperClass=""
+                  visible={true}
+                  ariaLabel="three-circles-rotating"
+                  outerCircleColor=""
+                  innerCircleColor=""
+                  middleCircleColor=""
+                />
+              </div>
+            </>
+          )}
+          <div className="flex  justify-evenly mt-12">
+            {loader === false &&
+              allData.length !== 0 &&
+              allData.map((data, index) => {
+                return (
+                  <div key={index} className="bg-cyan-100 rounded-lg  r p-5">
+                    <div className="flex justify-center">
+                      <img
+                        src={data.image}
+                        alt={`Image ${index}`}
+                        className="h-36 w-36 bg-cyan-200 rounded-lg "
+                      />
+                    </div>
+                    <div className="mt-5 flex justify-center w-36">
+                      {data.title}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+          {loader === false && (
+            <div className="flex justify-center mt-5">
+              <ReactPaginate
+                className="flex justify-evenly w-40"
+                // breakLabel="..."
+                onPageChange={handlePageClick}
+                pageRangeDisplayed={2}
+                pageCount={pageCount}
+                // previousLabel="< previous"
+                forcePage={currentPage}
+                // containerClassName="pagination"
+                // activeClassName="active"
+              />
+            </div>
+          )}
+        </div>
+      </main>
     </>
-  )
+  );
 }
-
-export default App
+export default App;
