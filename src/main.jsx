@@ -3,13 +3,19 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
-import { ApiProvider } from "@reduxjs/toolkit/dist/query/react";
 import { apiSlice } from "./services/apiSlice.jsx";
+import { store } from "./app/store.jsx";
+import { Provider } from "react-redux";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AllData from "./pages/allData.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <ApiProvider api={apiSlice}>
-      <App />
-    </ApiProvider>
-  </React.StrictMode>
+  <BrowserRouter>
+    <Provider store={store}>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/all" element={<AllData />} />
+      </Routes>
+    </Provider>
+  </BrowserRouter>
 );
