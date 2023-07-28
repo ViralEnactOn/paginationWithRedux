@@ -37,6 +37,10 @@ function App() {
     }
   }, []);
 
+
+
+  
+
   // Pagination logic
   const handlePageClick = () => {
     let nextPage = currentPage + 1;
@@ -64,7 +68,9 @@ function App() {
           <InfiniteScroll
             dataLength={responseData ? responseData.length : 10}
             next={handlePageClick}
-            hasMore={responseData ? (responseData.length === 150 ? false : true) : true}
+            hasMore={
+              responseData ? (responseData.length === 150 ? false : true) : true
+            }
             loader={
               <div className="flex justify-center mt-10 mb-10">
                 <ThreeCircles
