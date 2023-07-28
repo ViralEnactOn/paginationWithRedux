@@ -11,7 +11,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { ThreeCircles } from "react-loader-spinner";
 
 function App() {
-  let { limit, skip, data } = useSelector((state) => state.apiData);
+  let { limit, skip, responseData } = useSelector((state) => state.apiData);
   const [addNewPost] = useAddNewPostMutation();
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ function App() {
       });
   };
   useEffect(() => {
-    if (data === null) {
+    if (responseData === null) {
       fetchData(0);
     }
   }, []);
@@ -62,9 +62,9 @@ function App() {
             </button>
           </div>
           <InfiniteScroll
-            dataLength={data ? data.length : 10}
+            dataLength={responseData ? responseData.length : 10}
             next={handlePageClick}
-            hasMore={data ? (data.length === 150 ? false : true) : true}
+            hasMore={responseData ? (responseData.length === 150 ? false : true) : true}
             loader={
               <div className="flex justify-center mt-10 mb-10">
                 <ThreeCircles
@@ -83,8 +83,8 @@ function App() {
             }
           >
             <div className="flex flex-col justify-evenly mt-12">
-              {data !== null &&
-                data.map((data, index) => {
+              {responseData !== null &&
+                responseData.map((data, index) => {
                   return (
                     <div key={index} className="bg-white rounded-lg p-5 mt-10">
                       <div className="flex justify-center">{data.todo}</div>

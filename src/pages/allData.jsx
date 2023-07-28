@@ -2,18 +2,15 @@
 /* eslint-disable no-unused-vars */
 import * as React from "react";
 import { useSelector } from "react-redux/es/hooks/useSelector";
-import { Link } from "react-router-dom";
 
 function allData() {
-  const data = useSelector((state) => state.apiData.data);
-  console.log("data", data);
+  const data = useSelector((state) => state.apiData.responseData);
   return (
     <>
       <main className="flex justify-center min-w-max bg-gray-100 ">
         <div className="container">
-          <div className="flex flex-col justify-evenly mt-12">
-            {data === null && <Link to={"/"}></Link>}
-            {data.length !== 0 &&
+          <div className="flex flex-col justify-evenly">
+            {data !== null &&
               data.map((data, index) => {
                 return (
                   <div key={index} className="bg-white rounded-lg p-5 mt-10">
@@ -22,6 +19,13 @@ function allData() {
                 );
               })}
           </div>
+          {data === null && (
+            <div className=" flex justify-center h-screen">
+              <div className=" self-center text-3xl font-bold">
+                No Record Found
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </>
