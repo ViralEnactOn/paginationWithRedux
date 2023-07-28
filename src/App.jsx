@@ -1,54 +1,49 @@
+/* eslint-disable no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { useAddNewPostMutation } from "./services/apiSlice";
-import ReactPaginate from "react-paginate";
-import { ThreeCircles } from "react-loader-spinner";
 import { useSelector, useDispatch } from "react-redux";
-import { addData } from "./services/dataStore";
+import { addData, skipData } from "./services/dataStore";
 import { useNavigate } from "react-router-dom";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { ThreeCircles } from "react-loader-spinner";
+
 function App() {
-  const data = useSelector((state) => state.apiData.data);
-  const [addNewPost, response] = useAddNewPostMutation();
-  const [allData, setAllData] = useState([]);
-  const itemsPerPage = 10;
+  let { limit, skip, data } = useSelector((state) => state.apiData);
+  const [addNewPost] = useAddNewPostMutation();
   const [currentPage, setCurrentPage] = useState(1);
-  const [count, setCount] = useState("");
-  const pageCount = Math.ceil(count / itemsPerPage);
-  const [loader, setLoader] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  // console.log(
+  //   "Reudx Data",
+  //   useSelector((state) => state.apiData)
+  // );
 
-  const fetchData = async (pageNo) => {
-    setLoader(true);
-    let formData = {
-      limit: itemsPerPage,
-      skip: pageNo,
-    };
-    await addNewPost(formData)
+  const fetchData = async (skipValue) => {
+    await addNewPost({ limit: limit, skip: skipValue })
       .unwrap()
       .then((res) => {
-        setCount(res.total);
-        setAllData([...allData, ...res.todos]);
         dispatch(addData(res.todos));
-        setLoader(false);
       })
-      .then((error) => {
+      .catch((error) => {
         console.log(error);
       });
   };
   useEffect(() => {
-    if (allData.length === 0) {
+    if (data === null) {
       fetchData(0);
     }
   }, []);
 
   // Pagination logic
-  const handlePageClick = ({ selected }) => {
-    let skip = (selected - 1) * itemsPerPage;
-    setCurrentPage(selected);
-    fetchData(skip);
+  const handlePageClick = () => {
+    let nextPage = currentPage + 1;
+    let newSkip = skip + limit;
+    dispatch(skipData(newSkip));
+    setCurrentPage(nextPage);
+    fetchData(newSkip);
   };
 
   const handleNavigate = () => {
@@ -56,7 +51,7 @@ function App() {
   };
   return (
     <>
-      <main className="flex justify-center min-w-max ">
+      <main className="flex justify-center min-w-max bg-gray-100">
         <div className="container">
           <div className=" flex justify-center ">
             <button
@@ -66,12 +61,15 @@ function App() {
               Show All Records
             </button>
           </div>
-          {loader && (
-            <>
-              <div className="flex justify-center h-screen items-center">
+          <InfiniteScroll
+            dataLength={data ? data.length : 10}
+            next={handlePageClick}
+            hasMore={data ? (data.length === 150 ? false : true) : true}
+            loader={
+              <div className="flex justify-center mt-10 mb-10">
                 <ThreeCircles
-                  height="100"
-                  width="100"
+                  height="50"
+                  width="50"
                   color="#4d94a9"
                   wrapperStyle={{}}
                   wrapperClass=""
@@ -82,34 +80,19 @@ function App() {
                   middleCircleColor=""
                 />
               </div>
-            </>
-          )}
-          <div className="flex flex-col justify-evenly mt-12">
-            {loader === false &&
-              allData.length !== 0 &&
-              allData.map((data, index) => {
-                return (
-                  <div key={index} className="bg-cyan-100 rounded-lg p-5 mt-10">
-                    <div className="flex justify-center">{data.todo}</div>
-                  </div>
-                );
-              })}
-          </div>
-          {loader === false && (
-            <div className="flex justify-center mt-5">
-              <ReactPaginate
-                className="flex justify-evenly w-40"
-                // breakLabel="..."
-                onPageChange={handlePageClick}
-                pageRangeDisplayed={2}
-                pageCount={pageCount}
-                // previousLabel="< previous"
-                forcePage={currentPage}
-                // containerClassName="pagination"
-                // activeClassName="active"
-              />
+            }
+          >
+            <div className="flex flex-col justify-evenly mt-12">
+              {data !== null &&
+                data.map((data, index) => {
+                  return (
+                    <div key={index} className="bg-white rounded-lg p-5 mt-10">
+                      <div className="flex justify-center">{data.todo}</div>
+                    </div>
+                  );
+                })}
             </div>
-          )}
+          </InfiniteScroll>
         </div>
       </main>
     </>

@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   data: null,
+  limit: 10,
+  skip: 0,
 };
 
 export const apiData = createSlice({
@@ -15,9 +17,12 @@ export const apiData = createSlice({
         state.data = [...state.data, ...action.payload];
       }
     },
+    skipData: (state, action) => {
+      state.skip = action.payload;
+    },
   },
 });
 
-export const { addData } = apiData.actions;
+export const { addData, skipData } = apiData.actions;
 
 export default apiData.reducer;
